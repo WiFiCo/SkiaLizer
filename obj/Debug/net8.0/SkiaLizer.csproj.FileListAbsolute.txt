@@ -1,0 +1,5 @@
+C:\dev\SkiaLizer\obj\Debug\net8.0\SkiaLizer.csproj.AssemblyReference.cache
+C:\dev\SkiaLizer\obj\Debug\net8.0\SkiaLizer.GeneratedMSBuildEditorConfig.editorconfig
+C:\dev\SkiaLizer\obj\Debug\net8.0\SkiaLizer.AssemblyInfoInputs.cache
+C:\dev\SkiaLizer\obj\Debug\net8.0\SkiaLizer.AssemblyInfo.cs
+C:\dev\SkiaLizer\obj\Debug\net8.0\SkiaLizer.csproj.CoreCompileInputs.cache
