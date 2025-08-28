@@ -1,0 +1,96 @@
+name: Build and Release
+
+on:
+  push:
+    tags:
+      - 'v*'  # Triggers on version tags like v1.0.0, v1.2.3, etc.
+  release:
+    types: [published]
+
+jobs:
+  build:
+    name: Build for ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        include:
+          - os: windows-latest
+            runtime: win-x64
+            output: SkiaLizer.exe
+          - os: windows-latest
+            runtime: win-x86
+            output: SkiaLizer.exe
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: '8.0.x'
+
+    - name: Restore dependencies
+      run: dotnet restore
+
+    - name: Build and publish
+      run: |
+        dotnet publish -c Release -r ${{ matrix.runtime }} --self-contained true -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -o ./publish/${{ matrix.runtime }}
+
+    - name: Create zip package
+      shell: pwsh
+      run: |
+        $archiveName = "SkiaLizer-${{ github.ref_name }}-${{ matrix.runtime }}"
+        Compress-Archive -Path "./publish/${{ matrix.runtime }}/*" -DestinationPath "./$archiveName.zip"
+        
+    - name: Upload artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: SkiaLizer-${{ matrix.runtime }}
+        path: ./SkiaLizer-${{ github.ref_name }}-${{ matrix.runtime }}.zip
+
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/')
+    
+    steps:
+    - name: Download all artifacts
+      uses: actions/download-artifact@v4
+      
+    - name: Create Release
+      uses: softprops/action-gh-release@v1
+      with:
+        files: |
+          SkiaLizer-win-x64/SkiaLizer-${{ github.ref_name }}-win-x64.zip
+          SkiaLizer-win-x86/SkiaLizer-${{ github.ref_name }}-win-x86.zip
+        body: |
+          ## SkiaLizer ${{ github.ref_name }}
+          
+          ### Downloads
+          - **Windows 64-bit**: `SkiaLizer-${{ github.ref_name }}-win-x64.zip`
+          - **Windows 32-bit**: `SkiaLizer-${{ github.ref_name }}-win-x86.zip`
+          
+          ### What's New
+          - Auto-generated release from tag ${{ github.ref_name }}
+          
+          ### Installation
+          1. Download the appropriate zip file for your system
+          2. Extract the zip file
+          3. Run `SkiaLizer.exe`
+          
+          ### Requirements
+          - Windows 10/11
+          - Audio device (for visualization)
+          
+          ### Features
+          - Low-resource audio visualizer
+          - Multiple visualization modes
+          - Custom color palettes
+          - Transparency support
+          - Always-on-top mode
+          - Hotkey controls
+        draft: false
+        prerelease: false
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

@@ -1,0 +1,47 @@
+name: Build and Test
+
+on:
+  push:
+    branches: [ main, master, develop ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  build:
+    name: Build on ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [windows-latest]
+        runtime: [win-x64]
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: '8.0.x'
+
+    - name: Restore dependencies
+      run: dotnet restore
+
+    - name: Build
+      run: dotnet build -c Release --no-restore
+
+    - name: Test publish
+      run: |
+        dotnet publish -c Release -r ${{ matrix.runtime }} --self-contained true -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -o ./test-publish
+
+    - name: Verify executable exists
+      shell: pwsh
+      run: |
+        if (Test-Path "./test-publish/SkiaLizer.exe") {
+          Write-Host "✅ SkiaLizer.exe created successfully"
+          $size = (Get-Item "./test-publish/SkiaLizer.exe").Length / 1MB
+          Write-Host "📦 File size: $([math]::Round($size, 2)) MB"
+        } else {
+          Write-Host "❌ SkiaLizer.exe not found"
+          exit 1
+        }
