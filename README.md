@@ -157,6 +157,24 @@ MIT License - do what you want with it.
 
 ---
 
+## Project Structure
+
+SkiaLizer follows .NET best practices with a clean, organized codebase:
+
+```
+src/
+├── Core/           # Main application components
+├── Visualizers/    # Audio visualization implementations (16+ effects)
+├── UI/             # Menu and interface systems
+└── Configuration/  # Settings and palette management
+```
+
+See [docs/PROJECT_STRUCTURE.md](docs/PROJECT_STRUCTURE.md) for detailed information.
+
+## Contributing
+
+Feel free to submit issues, fork the repository, and create pull requests for any improvements.
+
 ## Thanks
 
 - SkiaSharp team for the graphics framework
