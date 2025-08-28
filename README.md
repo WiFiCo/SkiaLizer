@@ -141,7 +141,6 @@ The menu is pretty straightforward:
 **Requirements:**
 - Windows 10/11 (x64)
 - 4GB RAM (8GB recommended)
-- Any modern CPU
 - DirectX 11 GPU (integrated is fine)
 
 ---
@@ -153,8 +152,7 @@ The menu is pretty straightforward:
 
 ## License
 
-MIT License - do what you want with it.
-Credit is appreciated.
+MIT License - Do what you want with it. Credit is appreciated.
 
 ---
 
