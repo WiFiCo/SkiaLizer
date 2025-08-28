@@ -15,13 +15,7 @@
 
 ---
 
-SkiaLizer is built with a clear mission: **provide quality audio visualization with minimal system impact**. Whether you're a DJ performing live, a streamer creating content, or a hobbyist enjoying music at home, SkiaLizer adapts to your needs without consuming excessive system resources.
-
-## Why SkiaLizer?
-
-- **Lightweight** - Optimized for performance
-- **Versatile** - 16+ different visualization modes with customizable palettes
-- **Stream-ready** - Transparency support
+SkiaLizer is built with a clear mission: **provide quality audio visualization with minimal system impact**. Whether you're a DJ performing live, a streamer creating content, or a hobbyist thats not happy with existing options, SkiaLizer adapts to your needs without consuming excessive system resources.
 
 ---
 
@@ -40,7 +34,7 @@ SkiaLizer is built with a clear mission: **provide quality audio visualization w
 - Audio-reactive timing
 
 ### Display Options
-- Transparency mode for streaming overlays
+- Transparency mode
 - Fullscreen support
 - Always on top option
 - Custom window sizes from 240p to 8K
