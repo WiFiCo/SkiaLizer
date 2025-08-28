@@ -9,7 +9,7 @@
 
 **A lightweight audio visualizer for DJs, streamers, and music lovers**
 
-[Features](#features) • [Installation](#installation) • [Usage](#usage) • [Visualizations](#visualizations) • [Contributing](#contributing)
+[Features](#features) • [Installation](#installation) • [Usage](#usage) • [Visualizations](#visualizations)
 
 </div>
 
@@ -77,7 +77,7 @@ The menu is pretty straightforward:
 
 > **Key Controls:**
 > - **F11** - Toggle Fullscreen
-> - **Ctrl + T** - Toggle Transparency (great for OBS)
+> - **Ctrl + T** - Toggle Transparency
 > - **Ctrl + A** - Toggle Always On Top
 > - **Escape** - Back to Menu
 
@@ -154,6 +154,7 @@ The menu is pretty straightforward:
 ## License
 
 MIT License - do what you want with it.
+Credit is appreciated.
 
 ---
 
@@ -184,8 +185,6 @@ Feel free to submit issues, fork the repository, and create pull requests for an
 ---
 
 <div align="center">
-
-**Made for music lovers**
 
 [Star this repo](../../stargazers) • [Report Bug](../../issues) • [Request Feature](../../issues)
 
