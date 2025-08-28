@@ -20,6 +20,7 @@ namespace SkiaLizer
             public int SelectedWindowHeight { get; set; } = 600;
             public int SelectedVisual { get; set; } = 0;
             public int SelectedPalette { get; set; } = 0;
+            public bool AutoStartVisualizer { get; set; } = false;
             public List<string> CustomPaletteColors { get; set; } = new List<string>();
         }
 
@@ -152,6 +153,16 @@ namespace SkiaLizer
             set
             {
                 _config.SelectedPalette = value;
+                SaveConfig();
+            }
+        }
+
+        public static bool AutoStartVisualizer
+        {
+            get => _config.AutoStartVisualizer;
+            set
+            {
+                _config.AutoStartVisualizer = value;
                 SaveConfig();
             }
         }

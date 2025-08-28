@@ -34,6 +34,12 @@ namespace SkiaLizer
             set => ConfigManager.SelectedWindowHeight = value;
         }
 
+        public static bool AutoStartVisualizer
+        {
+            get => ConfigManager.AutoStartVisualizer;
+            set => ConfigManager.AutoStartVisualizer = value;
+        }
+
         public static void ShowSettings()
         {
             bool stayInSettings = true;
@@ -45,6 +51,7 @@ namespace SkiaLizer
                     $"Toggle Transparency {(TransparencyMode ? "[ON]" : "[OFF]")}",
                     $"Toggle Always on Top {(AlwaysOnTopMode ? "[ON]" : "[OFF]")}",
                     $"Toggle FullScreen {(FullScreenDefault ? "[ON]" : "[OFF]")}",
+                    $"Auto-Start Visualizer {(AutoStartVisualizer ? "[ON]" : "[OFF]")}",
                     "Set Window Size",
                     "Reset Settings",
                     "Back"
@@ -74,12 +81,19 @@ namespace SkiaLizer
                         Console.ReadKey();
                         break;
                     case 3:
-                        SelectWindowSize();
+                        AutoStartVisualizer = !AutoStartVisualizer;
+                        Console.WriteLine($"Auto-Start Visualizer is now {(AutoStartVisualizer ? "ON" : "OFF")}");
+                        Console.WriteLine("When enabled, the app will start directly to the system tray with the visualizer running.");
+                        Console.WriteLine("Press any key to continue...");
+                        Console.ReadKey();
                         break;
                     case 4:
-                        ResetSettings();
+                        SelectWindowSize();
                         break;
                     case 5:
+                        ResetSettings();
+                        break;
+                    case 6:
                         stayInSettings = false; // Back to main menu
                         break;
                 }

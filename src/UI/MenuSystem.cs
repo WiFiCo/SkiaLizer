@@ -39,7 +39,7 @@ namespace SkiaLizer
                 "Settings",
                 "Exit"
             };
-            int choice = ConsoleMenu.ShowMenu("=== SkiaLizer - Audio Visualizer Terminal ===", menuOptions);
+            int choice = ConsoleMenu.ShowMenu("=== SkiaLizer - Audio Visualizer by WiFiPunk ===", menuOptions);
 
             if (choice == -1) return 5; // Exit
 
@@ -112,6 +112,13 @@ namespace SkiaLizer
                 var enumerator = new MMDeviceEnumerator();
                 selectedDevice = enumerator.GetDefaultAudioEndpoint(DataFlow.Render, Role.Multimedia);
             }
+        }
+
+        public static void ForceShowSettings()
+        {
+            Console.Clear();
+            Console.WriteLine("=== Settings (opened from tray) ===");
+            SettingsManager.ShowSettings();
         }
     }
 }
