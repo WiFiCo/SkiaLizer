@@ -23,7 +23,7 @@ namespace SkiaLizer
                     Position = new Vector2(random.Next(0, width), random.Next(0, height)),
                     Velocity = new Vector2((float)(random.NextDouble() * 2 - 1), (float)(random.NextDouble() * 2 - 1)) * 0.9f,
                     Radius = 14f + (float)random.NextDouble() * 18f,
-                    Color = SKColor.FromHsv((colorHueBase + random.Next(0, 40)) % 360f, 60, 100)
+                    Color = GetPaletteColor((colorHueBase / 360f + random.NextSingle()) % 1.0f)
                 });
             }
             if (metaballs.Count > target) metaballs.RemoveRange(0, metaballs.Count - target);
@@ -77,7 +77,7 @@ namespace SkiaLizer
                 float drawRadius = MathF.Min(MathF.Max(10f, b.Radius * (0.9f + glow * 1.2f)), MathF.Max(width, height) * 0.2f);
 
                 float coolHue = (hueOffset + (i * 12f)) % 360f;
-                SKColor baseColor = SKColor.FromHsv(coolHue, (byte)Math.Min(100, 50 + glow * 30f), 100);
+                SKColor baseColor = GetPaletteColor((coolHue / 360f) % 1.0f);
                 glowPaint.Color = baseColor.WithAlpha((byte)alphaBase);
 
                 canvas.DrawCircle(b.Position.X, b.Position.Y, drawRadius, glowPaint);

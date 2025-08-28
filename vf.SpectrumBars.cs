@@ -30,12 +30,21 @@ namespace SkiaLizer
 
             const int barCount = 64;
             float barWidth = width / (float)barCount;
+            // Create gradient from current palette
+            SKColor[] gradientColors = new SKColor[Math.Min(8, colorPalette.Length)];
+            float[] gradientPositions = new float[gradientColors.Length];
+            
+            for (int i = 0; i < gradientColors.Length; i++)
+            {
+                float t = i / (float)(gradientColors.Length - 1);
+                gradientColors[i] = GetPaletteColor(t);
+                gradientPositions[i] = t;
+            }
+            
             using SKPaint paint = new SKPaint
             {
                 Shader = SKShader.CreateLinearGradient(new SKPoint(0, height), new SKPoint(0, 0),
-                    new[] { SKColors.Blue, SKColors.Cyan, SKColors.Yellow, SKColors.Red },
-                    new float[] { 0, 0.3f, 0.6f, 1 },
-                    SKShaderTileMode.Clamp)
+                    gradientColors, gradientPositions, SKShaderTileMode.Clamp)
             };
 
             using SKPaint peakPaint = new SKPaint { Color = SKColors.White, StrokeWidth = 2 };

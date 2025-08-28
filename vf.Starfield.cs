@@ -50,7 +50,10 @@ namespace SkiaLizer
                 Vector2 p = ProjectSafe(s.Pos, scale, width, height);
                 float depth = System.Math.Max(10f, s.Pos.Z);
                 byte alpha = (byte)System.Math.Clamp(80 + starSpeedSmooth * 20f + System.MathF.Sin(s.Phase) * 60f, 30, 255);
-                paint.Color = SKColor.FromHsv((s.Hue + colorHueBase) % 360f, 80, 100).WithAlpha(alpha);
+                // Use palette color based on star's position and movement
+                float colorPosition = ((s.Hue / 360f) + (colorHueBase / 360f) + (s.Pos.Z / 400f)) % 1.0f;
+                SKColor starColor = GetPaletteColor(colorPosition);
+                paint.Color = starColor.WithAlpha(alpha);
                 paint.StrokeWidth = System.Math.Max(1f, 6f / depth);
                 Vector2 tail = ProjectSafe(new Vector3(s.Pos.X, s.Pos.Y, s.Pos.Z + 18f * starSpeedSmooth), scale, width, height);
                 canvas.DrawLine(p.X, p.Y, tail.X, tail.Y, paint);

@@ -54,8 +54,11 @@ namespace SkiaLizer
 
             float hue = (colorHueBase + centroidNorm * 240f) % 360f;
             byte val = (byte)System.Math.Clamp(70 + (int)(level * 30) + (int)(beatPulse * 40), 0, 100);
-            using SKPaint glow = new SKPaint { Style = SKPaintStyle.Stroke, StrokeWidth = 3.5f, Color = SKColor.FromHsv(hue, 80, val).WithAlpha(60) };
-            using SKPaint paint = new SKPaint { Style = SKPaintStyle.Stroke, StrokeWidth = 1.6f, Color = SKColor.FromHsv(hue, 80, val) };
+            SKColor terrainColor = GetPaletteColor((hue / 360f) % 1.0f);
+            // Apply brightness modulation
+            terrainColor = new SKColor((byte)(terrainColor.Red * val / 100f), (byte)(terrainColor.Green * val / 100f), (byte)(terrainColor.Blue * val / 100f));
+            using SKPaint glow = new SKPaint { Style = SKPaintStyle.Stroke, StrokeWidth = 3.5f, Color = terrainColor.WithAlpha(60) };
+            using SKPaint paint = new SKPaint { Style = SKPaintStyle.Stroke, StrokeWidth = 1.6f, Color = terrainColor };
 
             for (int r = 0; r < TerrainRows - 1; r++)
             {
@@ -109,8 +112,8 @@ namespace SkiaLizer
             path.LineTo(0, 0);
             path.Close();
 
-            SKColor c1 = SKColor.FromHsv((colorHueBase + centroidNorm * 200f) % 360f, 60, 70).WithAlpha(120);
-            SKColor c0 = SKColor.FromHsv((colorHueBase + centroidNorm * 200f + 20f) % 360f, 40, 30).WithAlpha(0);
+            SKColor c1 = GetPaletteColor(((colorHueBase + centroidNorm * 200f) / 360f) % 1.0f).WithAlpha(120);
+            SKColor c0 = GetPaletteColor(((colorHueBase + centroidNorm * 200f + 20f) / 360f) % 1.0f).WithAlpha(0);
             using SKPaint fill = new SKPaint
             {
                 Shader = SKShader.CreateLinearGradient(new SKPoint(0, 0), new SKPoint(0, baseline), new[] { c0, c1 }, new float[] { 0, 1 }, SKShaderTileMode.Clamp)

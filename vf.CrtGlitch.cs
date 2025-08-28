@@ -37,7 +37,8 @@ namespace SkiaLizer
             if (sensNow > 0.3f)
             {
                 int glitches = (int)System.Math.Clamp(1 + sensNow * 8, 1, 18);
-                using SKPaint glitchPaint = new SKPaint { BlendMode = SKBlendMode.Difference, Color = SKColor.FromHsv((colorHueBase + sensNow * 90f) % 360f, 80, 100).WithAlpha((byte)System.Math.Clamp(100 + sensNow * 60, 80, 255)) };
+                float glitchColorPos = ((colorHueBase + sensNow * 90f) / 360f) % 1.0f;
+                using SKPaint glitchPaint = new SKPaint { BlendMode = SKBlendMode.Difference, Color = GetPaletteColor(glitchColorPos).WithAlpha((byte)System.Math.Clamp(100 + sensNow * 60, 80, 255)) };
                 for (int i = 0; i < glitches; i++)
                 {
                     int gw = (int)System.Math.Clamp(24 + sensNow * 160, 20, 220);

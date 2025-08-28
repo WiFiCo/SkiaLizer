@@ -86,7 +86,8 @@ namespace SkiaLizer
                 var p = boids[i];
                 float lifeT = p.Life / Math.Max(1f, p.MaxLife);
                 byte alpha = (byte)Math.Clamp(40 + lifeT * 160 + sens * 60, 0, 255);
-                paint.Color = SKColor.FromHsv(p.Hue, (byte)Math.Min(100, 70 + sens * 20f), 100).WithAlpha(alpha);
+                float colorPos = (p.Hue / 360f) % 1.0f;
+                paint.Color = GetPaletteColor(colorPos).WithAlpha(alpha);
                 float thickness = 1.0f + p.Size * (0.6f + sens * 0.7f);
                 paint.StrokeWidth = thickness;
                 Vector2 tail = p.Position - Vector2.Normalize(p.Velocity == Vector2.Zero ? new Vector2(1, 0) : p.Velocity) * (6f + sens * 28f);

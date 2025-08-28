@@ -43,7 +43,8 @@ namespace SkiaLizer
                 }
                 neigh.Sort((x, y) => x.d.CompareTo(y.d));
                 float hue = (colorHueBase + i * 5f) % 360f;
-                fill.Color = SKColor.FromHsv(hue, 70, 40).WithAlpha(60);
+                float colorPos = (hue / 360f) % 1.0f;
+                fill.Color = GetPaletteColor(colorPos).WithAlpha(60);
                 canvas.DrawCircle(a.X, a.Y, 6f + beatPulse * 8f, fill);
                 for (int n = 0; n < System.Math.Min(k, neigh.Count); n++)
                 {

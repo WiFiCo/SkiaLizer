@@ -10,6 +10,7 @@ using System.Collections.Concurrent;
 using System.Linq;
 using System.Drawing.Imaging;
 using System.Numerics;
+using System.Runtime.InteropServices;
 
 namespace SkiaLizer
 {
@@ -18,6 +19,108 @@ namespace SkiaLizer
         static int selectedVisual = 0;
         static MMDevice? selectedDevice = null;
         static List<MMDevice> devices = new List<MMDevice>();
+        static bool transparencyMode = false;
+        static bool alwaysOnTopMode = false;
+        static bool fullScreenDefault = false;
+        static int selectedWindowWidth = 800;
+        static int selectedWindowHeight = 600;
+        static int selectedPalette = 0; // 0 = Rainbow (default)
+        static List<SKColor> customPalette = new List<SKColor>();
+
+        // Predefined color palettes
+        static readonly Dictionary<string, SKColor[]> PredefinedPalettes = new Dictionary<string, SKColor[]>
+        {
+            ["Rainbow"] = new SKColor[]
+            {
+                SKColor.Parse("#FF0000"), // Red
+                SKColor.Parse("#FF8000"), // Orange
+                SKColor.Parse("#FFFF00"), // Yellow
+                SKColor.Parse("#80FF00"), // Yellow-Green
+                SKColor.Parse("#00FF00"), // Green
+                SKColor.Parse("#00FF80"), // Green-Cyan
+                SKColor.Parse("#00FFFF"), // Cyan
+                SKColor.Parse("#0080FF"), // Cyan-Blue
+                SKColor.Parse("#0000FF"), // Blue
+                SKColor.Parse("#8000FF"), // Blue-Purple
+                SKColor.Parse("#FF00FF"), // Purple
+                SKColor.Parse("#FF0080")  // Purple-Red
+            },
+            ["Neon"] = new SKColor[]
+            {
+                SKColor.Parse("#FF0080"), // Hot Pink
+                SKColor.Parse("#FF00FF"), // Magenta
+                SKColor.Parse("#8000FF"), // Electric Purple
+                SKColor.Parse("#0080FF"), // Electric Blue
+                SKColor.Parse("#00FFFF"), // Cyan
+                SKColor.Parse("#00FF80"), // Spring Green
+                SKColor.Parse("#80FF00"), // Electric Lime
+                SKColor.Parse("#FFFF00")  // Electric Yellow
+            },
+            ["Ocean"] = new SKColor[]
+            {
+                SKColor.Parse("#001122"), // Deep Ocean
+                SKColor.Parse("#003366"), // Dark Blue
+                SKColor.Parse("#0066AA"), // Ocean Blue
+                SKColor.Parse("#0099CC"), // Sky Blue
+                SKColor.Parse("#33AADD"), // Light Blue
+                SKColor.Parse("#66CCEE"), // Powder Blue
+                SKColor.Parse("#99DDFF"), // Pale Blue
+                SKColor.Parse("#CCEEEE")  // Foam
+            },
+            ["Fire"] = new SKColor[]
+            {
+                SKColor.Parse("#660000"), // Dark Red
+                SKColor.Parse("#CC0000"), // Red
+                SKColor.Parse("#FF3300"), // Red-Orange
+                SKColor.Parse("#FF6600"), // Orange
+                SKColor.Parse("#FF9900"), // Yellow-Orange
+                SKColor.Parse("#FFCC00"), // Gold
+                SKColor.Parse("#FFFF00"), // Yellow
+                SKColor.Parse("#FFFF99")  // Light Yellow
+            },
+            ["Sunset"] = new SKColor[]
+            {
+                SKColor.Parse("#2E1065"), // Deep Purple
+                SKColor.Parse("#6A1B9A"), // Purple
+                SKColor.Parse("#AD1457"), // Pink
+                SKColor.Parse("#D32F2F"), // Red
+                SKColor.Parse("#F57C00"), // Orange
+                SKColor.Parse("#FBC02D"), // Yellow
+                SKColor.Parse("#FFE082"), // Light Yellow
+                SKColor.Parse("#FFF3E0")  // Cream
+            },
+            ["Synthwave"] = new SKColor[]
+            {
+                SKColor.Parse("#FF00FF"), // Magenta
+                SKColor.Parse("#FF0080"), // Hot Pink
+                SKColor.Parse("#8000FF"), // Purple
+                SKColor.Parse("#0080FF"), // Blue
+                SKColor.Parse("#00FFFF"), // Cyan
+                SKColor.Parse("#FF8000"), // Orange
+                SKColor.Parse("#FFFF00"), // Yellow
+                SKColor.Parse("#FF0040")  // Rose
+            },
+            ["Monochrome"] = new SKColor[]
+            {
+                SKColor.Parse("#000000"), // Black
+                SKColor.Parse("#333333"), // Dark Gray
+                SKColor.Parse("#666666"), // Medium Gray
+                SKColor.Parse("#999999"), // Light Gray
+                SKColor.Parse("#CCCCCC"), // Very Light Gray
+                SKColor.Parse("#FFFFFF")  // White
+            },
+            ["Forest"] = new SKColor[]
+            {
+                SKColor.Parse("#0D2818"), // Dark Forest
+                SKColor.Parse("#1B5E20"), // Dark Green
+                SKColor.Parse("#2E7D32"), // Green
+                SKColor.Parse("#43A047"), // Medium Green
+                SKColor.Parse("#66BB6A"), // Light Green
+                SKColor.Parse("#81C784"), // Pale Green
+                SKColor.Parse("#A5D6A7"), // Very Light Green
+                SKColor.Parse("#C8E6C9")  // Mint
+            }
+        };
 
         static void Main(string[] args)
         {
@@ -42,6 +145,8 @@ namespace SkiaLizer
                     "Start Visualizer",
                     "Select Visual",
                     "Select Audio Source",
+                    "Select Palette",
+                    "Settings",
                     "Exit"
                 };
                 int choice = ConsoleMenu.ShowMenu("=== SkiaLizer - Audio Visualizer Terminal ===", menuOptions);
@@ -60,6 +165,12 @@ namespace SkiaLizer
                         SelectSource();
                         break;
                     case 3:
+                        SelectPalette();
+                        break;
+                    case 4:
+                        ShowSettings();
+                        break;
+                    case 5:
                         running = false;
                         break;
                 }
@@ -75,16 +186,17 @@ namespace SkiaLizer
                 "Radial Spectrum",
                 "Fractal Tree",
                 "3D Pipes",
-                "Kaleidoscope/Mirrors",
+                "Kaleidoscope",
                 "Audio Terrain",
                 "Neon Tunnel",
                 "Liquid Metaballs",
                 "Particle Boids/Confetti",
                 "Circle Packing Pulses",
-                "Starfield/Hyperwarp",
+                "Hyperwarp",
                 "CRT/Glitch Post",
                 "Fractal Kaleidoscope",
-                "Voronoi Cells"
+                "Voronoi Cells",
+                "Plasma Swirls"
             };
             int sel = ConsoleMenu.ShowMenu("Select Visual:", visuals, selectedVisual);
             if (sel == -1) return;
@@ -104,6 +216,525 @@ namespace SkiaLizer
             selectedDevice = devices[sel];
         }
 
+        static void ShowSettings()
+        {
+            string[] settingsOptions = new string[]
+            {
+                $"Toggle Transparency {(transparencyMode ? "[ON]" : "[OFF]")}",
+                $"Toggle Always on Top {(alwaysOnTopMode ? "[ON]" : "[OFF]")}",
+                $"Toggle FullScreen {(fullScreenDefault ? "[ON]" : "[OFF]")}",
+                "Set Window Size"
+            };
+            int sel = ConsoleMenu.ShowMenu("Settings:", settingsOptions);
+            if (sel == -1) return;
+            
+            switch (sel)
+            {
+                case 0:
+                    transparencyMode = !transparencyMode;
+                    break;
+                case 1:
+                    alwaysOnTopMode = !alwaysOnTopMode;
+                    break;
+                case 2:
+                    fullScreenDefault = !fullScreenDefault;
+                    break;
+                case 3:
+                    SelectWindowSize();
+                    break;
+            }
+        }
+
+        static void SelectWindowSize()
+        {
+            string[] sizeOptions = new string[]
+            {
+                // Low Resolution
+                "426x240 (240p)",
+                "640x360 (360p)", 
+                "854x480 (480p)",
+                "1024x576 (576p)",
+                
+                // Standard Resolutions
+                "800x600 (SVGA - Default)",
+                "1024x768 (XGA)",
+                "1280x720 (HD 720p)",
+                "1280x800 (WXGA)",
+                "1366x768 (WXGA)",
+                "1440x900 (WXGA+)",
+                "1600x900 (HD+)",
+                "1680x1050 (WSXGA+)",
+                
+                // Full HD and Above
+                "1920x1080 (Full HD 1080p)",
+                "1920x1200 (WUXGA)",
+                "2048x1152 (2K)",
+                "2560x1440 (1440p QHD)",
+                "2560x1600 (WQXGA)",
+                
+                // 4K Variants
+                "3840x2160 (4K UHD)",
+                "4096x2160 (4K DCI)",
+                
+                // Ultra-wide and Multi-Monitor
+                "2560x1080 (21:9 Ultrawide)",
+                "3440x1440 (21:9 Ultrawide QHD)",
+                "3840x1080 (Dual 1080p)",
+                "3840x1200 (Dual 1920x1200)",
+                "5120x1440 (Dual 1440p)",
+                "5760x1080 (Triple 1080p)",
+                "7680x2160 (Dual 4K)",
+                
+                // 8K and Extreme
+                "7680x4320 (8K UHD)",
+                "11520x2160 (Triple 4K Ultrawide)",
+                
+                "Custom Size..."
+            };
+            
+            // Find current selection index
+            int currentIndex = -1;
+            for (int i = 0; i < sizeOptions.Length - 1; i++) // -1 to exclude "Custom Size..."
+            {
+                var resolution = GetResolutionFromOption(sizeOptions[i]);
+                if (resolution.Width == selectedWindowWidth && resolution.Height == selectedWindowHeight)
+                {
+                    currentIndex = i;
+                    break;
+                }
+            }
+            
+            int sel = ConsoleMenu.ShowMenu("Select Window Size:", sizeOptions, currentIndex);
+            if (sel == -1) return;
+            
+            if (sel == sizeOptions.Length - 1) // Custom Size
+            {
+                Console.Write("Enter width: ");
+                if (int.TryParse(Console.ReadLine(), out int width) && width > 0)
+                {
+                    Console.Write("Enter height: ");
+                    if (int.TryParse(Console.ReadLine(), out int height) && height > 0)
+                    {
+                        selectedWindowWidth = width;
+                        selectedWindowHeight = height;
+                        Console.WriteLine($"Window size set to {width}x{height}");
+                    }
+                    else
+                    {
+                        Console.WriteLine("Invalid height. Size unchanged.");
+                    }
+                }
+                else
+                {
+                    Console.WriteLine("Invalid width. Size unchanged.");
+                }
+            }
+            else
+            {
+                var resolution = GetResolutionFromOption(sizeOptions[sel]);
+                selectedWindowWidth = resolution.Width;
+                selectedWindowHeight = resolution.Height;
+                Console.WriteLine($"Window size set to {selectedWindowWidth}x{selectedWindowHeight}");
+            }
+            
+            Console.WriteLine("Press any key to continue...");
+            Console.ReadKey();
+        }
+        
+        static (int Width, int Height) GetResolutionFromOption(string option)
+        {
+            // Extract resolution from option string like "1920x1080 (Full HD)"
+            var parts = option.Split(' ')[0].Split('x');
+            if (parts.Length == 2 && int.TryParse(parts[0], out int width) && int.TryParse(parts[1], out int height))
+            {
+                return (width, height);
+            }
+            return (800, 600); // fallback
+        }
+
+        static void SelectPalette()
+        {
+            var paletteNames = PredefinedPalettes.Keys.ToArray();
+            var menuOptions = new List<string>();
+            
+            // Add predefined palettes
+            foreach (var name in paletteNames)
+            {
+                menuOptions.Add(name + (selectedPalette < paletteNames.Length && paletteNames[selectedPalette] == name ? " (Current)" : ""));
+            }
+            
+            // Add custom palette options
+            menuOptions.Add($"Custom Palette {(selectedPalette == paletteNames.Length ? "(Current) " : "")}({customPalette.Count} colors)");
+            menuOptions.Add("Create Custom Palette");
+            menuOptions.Add("Edit Custom Palette");
+            
+            int sel = ConsoleMenu.ShowMenu("Select Color Palette:", menuOptions.ToArray(), selectedPalette);
+            if (sel == -1) return;
+            
+            if (sel < paletteNames.Length)
+            {
+                // Selected a predefined palette
+                selectedPalette = sel;
+                Console.WriteLine($"Selected palette: {paletteNames[sel]}");
+                ShowPalettePreview(PredefinedPalettes[paletteNames[sel]]);
+            }
+            else if (sel == paletteNames.Length)
+            {
+                // Selected existing custom palette
+                if (customPalette.Count > 0)
+                {
+                    selectedPalette = paletteNames.Length;
+                    Console.WriteLine($"Selected custom palette with {customPalette.Count} colors");
+                    ShowPalettePreview(customPalette.ToArray());
+                }
+                else
+                {
+                    Console.WriteLine("No custom palette created yet. Use 'Create Custom Palette' to make one.");
+                }
+            }
+            else if (sel == paletteNames.Length + 1)
+            {
+                // Create custom palette
+                CreateCustomPalette();
+            }
+            else if (sel == paletteNames.Length + 2)
+            {
+                // Edit custom palette
+                EditCustomPalette();
+            }
+            
+            Console.WriteLine("Press any key to continue...");
+            Console.ReadKey();
+        }
+        
+        static void ShowPalettePreview(SKColor[] colors)
+        {
+            Console.WriteLine("\nPalette Preview:");
+            for (int i = 0; i < colors.Length; i++)
+            {
+                var color = colors[i];
+                var ansiColor = GetClosestAnsiColor(color.Red, color.Green, color.Blue);
+                
+                // Use ANSI color codes for true color display if supported
+                string colorBlock = "";
+                if (Environment.OSVersion.Platform == PlatformID.Win32NT)
+                {
+                    // Use ANSI 256-color or true color escape sequences
+                    colorBlock = $"\x1b[48;2;{color.Red};{color.Green};{color.Blue}m    \x1b[0m";
+                }
+                else
+                {
+                    // Fallback to console colors
+                    Console.BackgroundColor = ansiColor;
+                    colorBlock = "    ";
+                    Console.ResetColor();
+                }
+                
+                Console.WriteLine($"  {i + 1}: {colorBlock} #{color.Red:X2}{color.Green:X2}{color.Blue:X2} (R:{color.Red} G:{color.Green} B:{color.Blue})");
+            }
+        }
+        
+        static void CreateCustomPalette()
+        {
+            customPalette.Clear();
+            Console.WriteLine("\n=== Create Custom Palette ===");
+            Console.WriteLine("Choose how to add colors:");
+            Console.WriteLine("[1] Enter hex colors manually");
+            Console.WriteLine("[2] Use interactive color picker");
+            Console.WriteLine("[3] Mix both methods");
+            Console.Write("Choice (1-3): ");
+            
+            string input = Console.ReadLine() ?? "";
+            
+            switch (input)
+            {
+                case "1":
+                    AddColorsManually();
+                    break;
+                case "2":
+                    AddColorsWithPicker();
+                    break;
+                case "3":
+                    Console.WriteLine("You can mix both methods. Start with one and use 'Edit Custom Palette' to add more.");
+                    AddColorsManually();
+                    break;
+                default:
+                    Console.WriteLine("Invalid choice. Using manual entry...");
+                    AddColorsManually();
+                    break;
+            }
+            
+            if (customPalette.Count > 0)
+            {
+                selectedPalette = PredefinedPalettes.Keys.Count; // Set to custom palette
+                Console.WriteLine($"\nCustom palette created with {customPalette.Count} colors!");
+                ShowPalettePreview(customPalette.ToArray());
+            }
+        }
+        
+        static void EditCustomPalette()
+        {
+            if (customPalette.Count == 0)
+            {
+                Console.WriteLine("No custom palette exists. Create one first.");
+                return;
+            }
+            
+            Console.WriteLine("\n=== Edit Custom Palette ===");
+            Console.WriteLine("Current palette:");
+            ShowPalettePreview(customPalette.ToArray());
+            
+            Console.WriteLine("\nOptions:");
+            Console.WriteLine("[1] Add more colors (hex entry)");
+            Console.WriteLine("[2] Add colors with picker");
+            Console.WriteLine("[3] Remove a color");
+            Console.WriteLine("[4] Clear all colors");
+            Console.WriteLine("[5] Replace a color");
+            Console.Write("Choice (1-5): ");
+            
+            string input = Console.ReadLine() ?? "";
+            
+            switch (input)
+            {
+                case "1":
+                    AddColorsManually();
+                    break;
+                case "2":
+                    AddColorsWithPicker();
+                    break;
+                case "3":
+                    RemoveColor();
+                    break;
+                case "4":
+                    customPalette.Clear();
+                    Console.WriteLine("Custom palette cleared.");
+                    break;
+                case "5":
+                    ReplaceColor();
+                    break;
+                default:
+                    Console.WriteLine("Invalid choice.");
+                    break;
+            }
+            
+            if (customPalette.Count > 0)
+            {
+                Console.WriteLine($"\nUpdated custom palette:");
+                ShowPalettePreview(customPalette.ToArray());
+            }
+        }
+        
+        static void AddColorsManually()
+        {
+            Console.WriteLine("\n=== Manual Hex Color Entry ===");
+            Console.WriteLine("Enter hex colors (e.g., FF0000, #FF0000, or ff0000)");
+            Console.WriteLine("Press Enter with empty input to finish");
+            
+            while (true)
+            {
+                Console.Write($"Color {customPalette.Count + 1} (hex): ");
+                string input = Console.ReadLine()?.Trim() ?? "";
+                
+                if (string.IsNullOrEmpty(input)) break;
+                
+                // Clean up input
+                if (!input.StartsWith("#")) input = "#" + input;
+                
+                try
+                {
+                    var color = SKColor.Parse(input);
+                    customPalette.Add(color);
+                    Console.WriteLine($"Added: {input} -> R:{color.Red} G:{color.Green} B:{color.Blue}");
+                }
+                catch
+                {
+                    Console.WriteLine("Invalid hex color. Try again (e.g., FF0000 or #FF0000)");
+                }
+            }
+        }
+        
+        static void AddColorsWithPicker()
+        {
+            Console.WriteLine("\n=== Interactive Color Picker ===");
+            Console.WriteLine("Use arrow keys to adjust RGB values, Enter to add color, Esc when done");
+            
+            while (true)
+            {
+                var color = InteractiveColorPicker();
+                if (color.HasValue)
+                {
+                    customPalette.Add(color.Value);
+                    Console.WriteLine($"Added color: #{color.Value.Red:X2}{color.Value.Green:X2}{color.Value.Blue:X2}");
+                    Console.WriteLine($"Total colors in palette: {customPalette.Count}");
+                    Console.WriteLine("Press any key to add another color, or Esc to finish...");
+                    
+                    var key = Console.ReadKey(true);
+                    if (key.Key == ConsoleKey.Escape) break;
+                }
+                else
+                {
+                    break; // User escaped
+                }
+            }
+        }
+        
+        static SKColor? InteractiveColorPicker()
+        {
+            int red = 255, green = 0, blue = 0;
+            int selectedChannel = 0; // 0=R, 1=G, 2=B
+            
+            while (true)
+            {
+                Console.Clear();
+                Console.WriteLine("=== Interactive Color Picker ===");
+                Console.WriteLine("Use Up/Down arrows to change values, Left/Right to switch channels");
+                Console.WriteLine("Press Enter to add this color, Esc to cancel");
+                Console.WriteLine();
+                
+                // Show current color
+                Console.WriteLine($"Current Color: #{red:X2}{green:X2}{blue:X2}");
+                Console.WriteLine($"RGB Values: R:{red} G:{green} B:{blue}");
+                Console.WriteLine();
+                
+                // Show sliders
+                Console.WriteLine($"{(selectedChannel == 0 ? "► " : "  ")}Red   (R): {red:D3} [{new string('█', red / 8)}{new string('░', 32 - red / 8)}]");
+                Console.WriteLine($"{(selectedChannel == 1 ? "► " : "  ")}Green (G): {green:D3} [{new string('█', green / 8)}{new string('░', 32 - green / 8)}]");
+                Console.WriteLine($"{(selectedChannel == 2 ? "► " : "  ")}Blue  (B): {blue:D3} [{new string('█', blue / 8)}{new string('░', 32 - blue / 8)}]");
+                Console.WriteLine();
+                
+                // Show color preview with ANSI colors (approximate)
+                var ansiColor = GetClosestAnsiColor(red, green, blue);
+                Console.Write("Preview: ");
+                Console.BackgroundColor = ansiColor;
+                Console.Write("    ");
+                Console.ResetColor();
+                Console.WriteLine($" (Approximate - actual color is #{red:X2}{green:X2}{blue:X2})");
+                
+                var key = Console.ReadKey(true);
+                
+                switch (key.Key)
+                {
+                    case ConsoleKey.UpArrow:
+                        if (selectedChannel == 0) red = Math.Min(255, red + 5);
+                        else if (selectedChannel == 1) green = Math.Min(255, green + 5);
+                        else blue = Math.Min(255, blue + 5);
+                        break;
+                        
+                    case ConsoleKey.DownArrow:
+                        if (selectedChannel == 0) red = Math.Max(0, red - 5);
+                        else if (selectedChannel == 1) green = Math.Max(0, green - 5);
+                        else blue = Math.Max(0, blue - 5);
+                        break;
+                        
+                    case ConsoleKey.RightArrow:
+                        selectedChannel = (selectedChannel + 1) % 3;
+                        break;
+                        
+                    case ConsoleKey.LeftArrow:
+                        selectedChannel = (selectedChannel - 1 + 3) % 3;
+                        break;
+                        
+                    case ConsoleKey.Enter:
+                        return new SKColor((byte)red, (byte)green, (byte)blue);
+                        
+                    case ConsoleKey.Escape:
+                        return null;
+                }
+            }
+        }
+        
+        static ConsoleColor GetClosestAnsiColor(int r, int g, int b)
+        {
+            // Simple mapping to closest console colors
+            if (r > 200 && g > 200 && b > 200) return ConsoleColor.White;
+            if (r < 50 && g < 50 && b < 50) return ConsoleColor.Black;
+            if (r > 150 && g < 100 && b < 100) return ConsoleColor.Red;
+            if (r < 100 && g > 150 && b < 100) return ConsoleColor.Green;
+            if (r < 100 && g < 100 && b > 150) return ConsoleColor.Blue;
+            if (r > 150 && g > 150 && b < 100) return ConsoleColor.Yellow;
+            if (r > 150 && g < 100 && b > 150) return ConsoleColor.Magenta;
+            if (r < 100 && g > 150 && b > 150) return ConsoleColor.Cyan;
+            if (r > 100 && g > 100 && b > 100) return ConsoleColor.Gray;
+            return ConsoleColor.DarkGray;
+        }
+        
+        static void RemoveColor()
+        {
+            if (customPalette.Count == 0) return;
+            
+            Console.WriteLine("Select color to remove:");
+            for (int i = 0; i < customPalette.Count; i++)
+            {
+                var color = customPalette[i];
+                Console.WriteLine($"[{i + 1}] #{color.Red:X2}{color.Green:X2}{color.Blue:X2}");
+            }
+            Console.Write("Enter number (1-{0}): ", customPalette.Count);
+            
+            if (int.TryParse(Console.ReadLine(), out int index) && index >= 1 && index <= customPalette.Count)
+            {
+                customPalette.RemoveAt(index - 1);
+                Console.WriteLine("Color removed.");
+            }
+            else
+            {
+                Console.WriteLine("Invalid selection.");
+            }
+        }
+        
+        static void ReplaceColor()
+        {
+            if (customPalette.Count == 0) return;
+            
+            Console.WriteLine("Select color to replace:");
+            for (int i = 0; i < customPalette.Count; i++)
+            {
+                var color = customPalette[i];
+                Console.WriteLine($"[{i + 1}] #{color.Red:X2}{color.Green:X2}{color.Blue:X2}");
+            }
+            Console.Write($"Enter number (1-{customPalette.Count}): ");
+            
+            if (int.TryParse(Console.ReadLine(), out int index) && index >= 1 && index <= customPalette.Count)
+            {
+                Console.WriteLine("Choose replacement method:");
+                Console.WriteLine("[1] Enter hex color");
+                Console.WriteLine("[2] Use color picker");
+                Console.Write("Choice: ");
+                
+                string method = Console.ReadLine() ?? "";
+                SKColor? newColor = null;
+                
+                if (method == "1")
+                {
+                    Console.Write("New hex color: ");
+                    string hex = Console.ReadLine()?.Trim() ?? "";
+                    if (!hex.StartsWith("#")) hex = "#" + hex;
+                    try
+                    {
+                        newColor = SKColor.Parse(hex);
+                    }
+                    catch
+                    {
+                        Console.WriteLine("Invalid hex color.");
+                        return;
+                    }
+                }
+                else if (method == "2")
+                {
+                    newColor = InteractiveColorPicker();
+                }
+                
+                if (newColor.HasValue)
+                {
+                    customPalette[index - 1] = newColor.Value;
+                    Console.WriteLine("Color replaced.");
+                }
+            }
+            else
+            {
+                Console.WriteLine("Invalid selection.");
+            }
+        }
+
         static void StartVisualizer()
         {
             if (selectedDevice == null)
@@ -111,8 +742,29 @@ namespace SkiaLizer
                 var enumerator = new MMDeviceEnumerator();
                 selectedDevice = enumerator.GetDefaultAudioEndpoint(DataFlow.Render, Role.Multimedia);
             }
-            var form = new VisualizerForm(selectedVisual, selectedDevice);
+            var form = new VisualizerForm(selectedVisual, selectedDevice, transparencyMode, alwaysOnTopMode, selectedWindowWidth, selectedWindowHeight, fullScreenDefault, GetCurrentPalette());
             Application.Run(form);
+        }
+
+        static SKColor[] GetCurrentPalette()
+        {
+            var paletteNames = PredefinedPalettes.Keys.ToArray();
+            
+            if (selectedPalette < paletteNames.Length)
+            {
+                // Return predefined palette
+                return PredefinedPalettes[paletteNames[selectedPalette]];
+            }
+            else if (customPalette.Count > 0)
+            {
+                // Return custom palette
+                return customPalette.ToArray();
+            }
+            else
+            {
+                // Fallback to rainbow (default)
+                return PredefinedPalettes["Rainbow"];
+            }
         }
 
         // removed local ShowMenu; using ConsoleMenu.ShowMenu
@@ -120,8 +772,63 @@ namespace SkiaLizer
 
     public partial class VisualizerForm : Form
     {
+        // Windows API for layered window transparency
+        [DllImport("user32.dll")]
+        private static extern int GetWindowLong(IntPtr hWnd, int nIndex);
+        
+        [DllImport("user32.dll")]
+        private static extern int SetWindowLong(IntPtr hWnd, int nIndex, int dwNewLong);
+        
+        [DllImport("user32.dll")]
+        private static extern bool UpdateLayeredWindow(IntPtr hWnd, IntPtr hdcDst, ref POINT pptDst, ref SIZE psize, IntPtr hdcSrc, ref POINT pptSrc, uint crKey, ref BLENDFUNCTION pblend, uint dwFlags);
+        
+        [DllImport("user32.dll")]
+        private static extern IntPtr GetDC(IntPtr hWnd);
+        
+        [DllImport("user32.dll")]
+        private static extern int ReleaseDC(IntPtr hWnd, IntPtr hDC);
+        
+        [DllImport("gdi32.dll")]
+        private static extern IntPtr CreateCompatibleDC(IntPtr hdc);
+        
+        [DllImport("gdi32.dll")]
+        private static extern IntPtr SelectObject(IntPtr hdc, IntPtr hgdiobj);
+        
+        [DllImport("gdi32.dll")]
+        private static extern bool DeleteDC(IntPtr hdc);
+        
+        [DllImport("gdi32.dll")]
+        private static extern bool DeleteObject(IntPtr hObject);
+        
+        private const int GWL_EXSTYLE = -20;
+        private const int WS_EX_LAYERED = 0x80000;
+        private const int ULW_ALPHA = 0x00000002;
+        
+        [StructLayout(LayoutKind.Sequential)]
+        public struct POINT
+        {
+            public int x;
+            public int y;
+        }
+        
+        [StructLayout(LayoutKind.Sequential)]
+        public struct SIZE
+        {
+            public int cx;
+            public int cy;
+        }
+        
+        [StructLayout(LayoutKind.Sequential)]
+        public struct BLENDFUNCTION
+        {
+            public byte BlendOp;
+            public byte BlendFlags;
+            public byte SourceConstantAlpha;
+            public byte AlphaFormat;
+        }
+        
         private static float ClampF(float value, float min, float max)
-    {
+        {
             if (value < min) return min;
             if (value > max) return max;
             return value;
@@ -236,13 +943,48 @@ namespace SkiaLizer
 
         private readonly List<Vector2> voronoiSites = new List<Vector2>();
 
-        public VisualizerForm(int visual, MMDevice device)
+        private bool isTransparent;
+        private bool isAlwaysOnTop;
+        private System.Windows.Forms.Timer renderTimer;
+        private SKColor[] colorPalette;
+
+        public VisualizerForm(int visual, MMDevice device, bool enableTransparency, bool alwaysOnTop = false, int windowWidth = 800, int windowHeight = 600, bool startFullScreen = false, SKColor[]? palette = null)
         {
             selectedVisual = visual;
-            this.Text = "SkiaLizer Visualizer";
-            this.ClientSize = new Size(800, 600);
+            isTransparent = enableTransparency;
+            isAlwaysOnTop = alwaysOnTop;
+            
+            // Set color palette (fallback to rainbow if null)
+            colorPalette = palette ?? new SKColor[]
+            {
+                SKColor.Parse("#FF0000"), SKColor.Parse("#FF8000"), SKColor.Parse("#FFFF00"), SKColor.Parse("#80FF00"),
+                SKColor.Parse("#00FF00"), SKColor.Parse("#00FF80"), SKColor.Parse("#00FFFF"), SKColor.Parse("#0080FF"),
+                SKColor.Parse("#0000FF"), SKColor.Parse("#8000FF"), SKColor.Parse("#FF00FF"), SKColor.Parse("#FF0080")
+            };
+            
+            // Set initial title with current state
+            string title = "SkiaLizer Visualizer";
+            if (enableTransparency) title += " (Transparent)";
+            if (alwaysOnTop) title += " (Always on Top)";
+            this.Text = title;
+            this.ClientSize = new Size(windowWidth, windowHeight);
             this.KeyPreview = true;
             this.DoubleBuffered = true;
+
+            // Set always on top based on setting
+            this.TopMost = alwaysOnTop;
+
+            // Enable transparency for desktop and OBS
+            if (enableTransparency)
+            {
+                // Enable per-pixel alpha transparency
+                this.SetStyle(ControlStyles.SupportsTransparentBackColor, true);
+                this.FormBorderStyle = FormBorderStyle.None;
+                this.TopMost = true; // Force on top when transparent for OBS compatibility
+                this.ShowInTaskbar = true; // Keep in taskbar for easy access
+                this.BackColor = Color.Transparent;
+                this.TransparencyKey = Color.Empty; // No color key - use per-pixel alpha
+            }
 
             this.Paint += OnPaint;
             this.Resize += OnResize;
@@ -252,7 +994,12 @@ namespace SkiaLizer
             capture.StartRecording();
 
             this.KeyDown += OnKeyDown;
-            this.FormClosing += (s, e) => { capture.StopRecording(); capture.Dispose(); };
+            this.FormClosing += (s, e) => { 
+                renderTimer?.Stop();
+                renderTimer?.Dispose();
+                capture.StopRecording(); 
+                capture.Dispose(); 
+            };
 
             Array.Clear(smoothedSpectrum, 0, smoothedSpectrum.Length);
             Array.Clear(peakSpectrum, 0, peakSpectrum.Length);
@@ -268,7 +1015,48 @@ namespace SkiaLizer
             currentPositions.Add(new Vector3(0, 0, 50));
             currentDirections.Add(new Vector3(0, 1, 0));
             pipeSystems.Add(new List<PipeSegment>());
+            
+            // Set up render timer for smooth animation
+            renderTimer = new System.Windows.Forms.Timer();
+            renderTimer.Interval = 16; // ~60 FPS
+            renderTimer.Tick += (s, e) => {
+                if (isTransparent)
+                {
+                    UpdateLayeredWindowWithAlpha();
+                }
+                else
+                {
+                    Invalidate();
+                }
+            };
+            
+            // Apply layered window style for transparency BEFORE starting timer
+            if (enableTransparency)
+            {
+                // Force handle creation and apply layered window style immediately
+                this.CreateHandle();
+                if (this.IsHandleCreated)
+                {
+                    int exStyle = GetWindowLong(this.Handle, GWL_EXSTYLE);
+                    exStyle |= WS_EX_LAYERED;
+                    SetWindowLong(this.Handle, GWL_EXSTYLE, exStyle);
+                }
+            }
+            
+            renderTimer.Start();
+            
+            // Apply fullscreen default if enabled
+            if (startFullScreen)
+            {
+                this.Load += (s, e) => {
+                    this.WindowState = FormWindowState.Maximized;
+                    this.FormBorderStyle = FormBorderStyle.None;
+                    isFullScreen = true;
+                };
+            }
         }
+
+
 
         private void OnResize(object? sender, EventArgs e)
         {
@@ -277,11 +1065,16 @@ namespace SkiaLizer
 
         private void OnPaint(object? sender, PaintEventArgs e)
         {
-            RenderToBitmap();
-            if (bitmap != null)
+            if (!isTransparent)
             {
-                e.Graphics.DrawImage(bitmap, 0, 0);
+                // Only use normal bitmap rendering for non-transparent mode
+                RenderToBitmap();
+                if (bitmap != null)
+                {
+                    e.Graphics.DrawImage(bitmap, 0, 0);
+                }
             }
+            // For transparent mode, do nothing here - handled by timer
         }
 
         private void RenderToBitmap()
@@ -302,7 +1095,7 @@ namespace SkiaLizer
             using (var surface = SKSurface.Create(info, bmpData.Scan0, bmpData.Stride))
             {
                 SKCanvas canvas = surface.Canvas;
-                canvas.Clear(SKColors.Black);
+                canvas.Clear(SKColors.Black); // Always black for normal rendering
 
                 switch (selectedVisual)
                 {
@@ -351,9 +1144,121 @@ namespace SkiaLizer
                     case 14:
                         DrawVoronoi(canvas, width, height);
                         break;
+                    case 15:
+                        DrawPlasma(canvas, width, height);
+                        break;
                 }
             }
             bitmap.UnlockBits(bmpData);
+        }
+
+        private void UpdateLayeredWindowWithAlpha()
+        {
+            int width = ClientSize.Width;
+            int height = ClientSize.Height;
+            if (width <= 0 || height <= 0) return;
+
+            // Create a bitmap with proper alpha channel for per-pixel transparency
+            using var transparentBitmap = new Bitmap(width, height, PixelFormat.Format32bppPArgb);
+            
+            var bmpData = transparentBitmap.LockBits(new Rectangle(0, 0, width, height), ImageLockMode.WriteOnly, transparentBitmap.PixelFormat);
+            var info = new SKImageInfo(width, height, SKColorType.Bgra8888, SKAlphaType.Premul);
+
+            using (var surface = SKSurface.Create(info, bmpData.Scan0, bmpData.Stride))
+            {
+                SKCanvas canvas = surface.Canvas;
+                canvas.Clear(SKColors.Transparent); // Clear with full transparency
+
+                switch (selectedVisual)
+                {
+                    case 0:
+                        DrawSpectrumBars(canvas, width, height);
+                        break;
+                    case 1:
+                        DrawWaveform(canvas, width, height);
+                        break;
+                    case 2:
+                        DrawRadialSpectrum(canvas, width, height);
+                        break;
+                    case 3:
+                        DrawFractalTree(canvas, width, height);
+                        break;
+                    case 4:
+                        Draw3DPipes(canvas, width, height);
+                        break;
+                    case 5:
+                        DrawKaleidoscope(canvas, width, height);
+                        break;
+                    case 6:
+                        DrawAudioTerrain(canvas, width, height);
+                        break;
+                    case 7:
+                        DrawNeonTunnel(canvas, width, height);
+                        break;
+                    case 8:
+                        DrawMetaballs(canvas, width, height);
+                        break;
+                    case 9:
+                        DrawBoids(canvas, width, height);
+                        break;
+                    case 10:
+                        DrawCirclePacking(canvas, width, height);
+                        break;
+                    case 11:
+                        DrawStarfield(canvas, width, height);
+                        break;
+                    case 12:
+                        DrawCrtGlitch(canvas, width, height);
+                        break;
+                    case 13:
+                        DrawFractalKaleidoscope(canvas, width, height);
+                        break;
+                    case 14:
+                        DrawVoronoi(canvas, width, height);
+                        break;
+                    case 15:
+                        DrawPlasma(canvas, width, height);
+                        break;
+                }
+            }
+            
+            transparentBitmap.UnlockBits(bmpData);
+            
+            // Use UpdateLayeredWindow for proper per-pixel alpha transparency
+            UpdateLayeredWindowFromBitmap(transparentBitmap);
+        }
+
+        private void UpdateLayeredWindowFromBitmap(Bitmap bitmap)
+        {
+            try
+            {
+                IntPtr screenDC = GetDC(IntPtr.Zero);
+                IntPtr memDC = CreateCompatibleDC(screenDC);
+                IntPtr hBitmap = bitmap.GetHbitmap(Color.FromArgb(0));
+                IntPtr oldBitmap = SelectObject(memDC, hBitmap);
+
+                var size = new SIZE { cx = bitmap.Width, cy = bitmap.Height };
+                var pointSource = new POINT { x = 0, y = 0 };
+                var pointLocation = new POINT { x = Left, y = Top };
+                var blend = new BLENDFUNCTION
+                {
+                    BlendOp = 0, // AC_SRC_OVER
+                    BlendFlags = 0,
+                    SourceConstantAlpha = 255,
+                    AlphaFormat = 1 // AC_SRC_ALPHA
+                };
+
+                UpdateLayeredWindow(this.Handle, screenDC, ref pointLocation, ref size, memDC, ref pointSource, 0, ref blend, ULW_ALPHA);
+
+                SelectObject(memDC, oldBitmap);
+                DeleteObject(hBitmap);
+                DeleteDC(memDC);
+                ReleaseDC(IntPtr.Zero, screenDC);
+            }
+            catch
+            {
+                // Ignore errors during shutdown or handle recreation
+            }
         }
 
         private void OnDataAvailable(object? sender, WaveInEventArgs e)
@@ -561,6 +1466,14 @@ namespace SkiaLizer
             {
                 ToggleFullScreen();
             }
+            else if (e.KeyCode == Keys.T && e.Control)
+            {
+                ToggleTransparency();
+            }
+            else if (e.KeyCode == Keys.A && e.Control)
+            {
+                ToggleAlwaysOnTop();
+            }
             else if (e.KeyCode == Keys.Escape)
             {
                 this.Close();
@@ -581,6 +1494,111 @@ namespace SkiaLizer
                 WindowState = FormWindowState.Normal;
             }
             Invalidate();
+        }
+
+        private void ToggleTransparency()
+        {
+            isTransparent = !isTransparent;
+            
+            if (isTransparent)
+            {
+                // Enable per-pixel alpha transparency
+                this.SetStyle(ControlStyles.SupportsTransparentBackColor, true);
+                this.BackColor = Color.Transparent;
+                this.TransparencyKey = Color.Empty;
+                this.FormBorderStyle = FormBorderStyle.None;
+                this.TopMost = true; // Force on top when transparent for OBS compatibility
+                this.ShowInTaskbar = true; // Keep in taskbar for easy access
+                
+                // Update title to show current state
+                string title = "SkiaLizer Visualizer (Transparent)";
+                if (isAlwaysOnTop) title += " (Always on Top)";
+                this.Text = title;
+                
+                // Apply layered window style
+                if (this.IsHandleCreated)
+                {
+                    int exStyle = GetWindowLong(this.Handle, GWL_EXSTYLE);
+                    exStyle |= WS_EX_LAYERED;
+                    SetWindowLong(this.Handle, GWL_EXSTYLE, exStyle);
+                }
+            }
+            else
+            {
+                // Remove layered window style first
+                if (this.IsHandleCreated)
+                {
+                    int exStyle = GetWindowLong(this.Handle, GWL_EXSTYLE);
+                    exStyle &= ~WS_EX_LAYERED;
+                    SetWindowLong(this.Handle, GWL_EXSTYLE, exStyle);
+                }
+                
+                // Reset to normal window
+                this.BackColor = SystemColors.Control;
+                this.TransparencyKey = Color.Empty;
+                this.FormBorderStyle = FormBorderStyle.Sizable;
+                this.TopMost = isAlwaysOnTop; // Respect always on top setting when not transparent
+                this.ShowInTaskbar = true;
+                
+                // Update title to show current state
+                string title = "SkiaLizer Visualizer";
+                if (isAlwaysOnTop) title += " (Always on Top)";
+                this.Text = title;
+            }
+            Invalidate();
+        }
+
+        private void ToggleAlwaysOnTop()
+        {
+            isAlwaysOnTop = !isAlwaysOnTop;
+            
+            // Apply the setting immediately
+            // If transparent, it stays on top regardless, but update for when transparency is turned off
+            if (!isTransparent)
+            {
+                this.TopMost = isAlwaysOnTop;
+            }
+            
+            // Update title to show current state
+            string title = "SkiaLizer Visualizer";
+            if (isTransparent) title += " (Transparent)";
+            if (isAlwaysOnTop) title += " (Always on Top)";
+            this.Text = title;
+        }
+
+        private SKColor GetPaletteColor(float t)
+        {
+            if (colorPalette.Length == 0) return SKColors.White;
+            if (colorPalette.Length == 1) return colorPalette[0];
+            
+            // Normalize t to 0-1 range
+            t = Math.Max(0, Math.Min(1, t));
+            
+            // Map t to palette index range
+            float exactIndex = t * (colorPalette.Length - 1);
+            int index1 = (int)Math.Floor(exactIndex);
+            int index2 = Math.Min(index1 + 1, colorPalette.Length - 1);
+            
+            // If exact index, return that color
+            if (index1 == index2) return colorPalette[index1];
+            
+            // Interpolate between two colors
+            float blend = exactIndex - index1;
+            var color1 = colorPalette[index1];
+            var color2 = colorPalette[index2];
+            
+            byte r = (byte)(color1.Red * (1 - blend) + color2.Red * blend);
+            byte g = (byte)(color1.Green * (1 - blend) + color2.Green * blend);
+            byte b = (byte)(color1.Blue * (1 - blend) + color2.Blue * blend);
+            
+            return new SKColor(r, g, b);
+        }
+        
+        private SKColor GetPaletteColorCyclic(float hue)
+        {
+            // Map hue (0-360) to palette cyclically
+            float normalizedHue = (hue % 360f) / 360f;
+            return GetPaletteColor(normalizedHue);
         }
 
         // moved to vf.SpectrumBars.cs

@@ -20,7 +20,7 @@ namespace SkiaLizer
                     Center = cpos,
                     Radius = 6f,
                     Target = 10f,
-                    Color = SKColor.FromHsv((colorHueBase + circles.Count * 6f) % 360f, 80, 100),
+                    Color = GetPaletteColor(circles.Count / (float)bands),
                     Velocity = RandomVel(0.5f),
                     Alpha = 200f,
                     Life = 180f,
@@ -76,7 +76,8 @@ namespace SkiaLizer
                     RespawnCircle(ref c, width, height);
                 }
 
-                c.Color = SKColor.FromHsv((colorHueBase + i * 6f) % 360f, (byte)Math.Min(100, 70 + sens * 20f), 100);
+                float colorPos = (i / (float)circles.Count + colorHueBase / 360f) % 1.0f;
+                c.Color = GetPaletteColor(colorPos);
                 c.Alpha = Math.Max(40f, 255f * (c.Life / Math.Max(1f, c.MaxLife)));
 
                 circles[i] = c;

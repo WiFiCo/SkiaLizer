@@ -32,14 +32,24 @@ namespace SkiaLizer
 			canvas.Save();
 			canvas.RotateDegrees(rotationAngle, centerX, centerY);
 
-			using SKPaint paint = new SKPaint
-			{
-				Style = SKPaintStyle.Stroke,
-				StrokeWidth = 2,
-				Shader = SKShader.CreateRadialGradient(new SKPoint(centerX, centerY), maxRadius,
-					new[] { SKColors.Purple, SKColors.Blue, SKColors.Cyan },
-					new float[] { 0, 0.5f, 1 }, SKShaderTileMode.Clamp)
-			};
+					// Create radial gradient from current palette
+		SKColor[] gradientColors = new SKColor[Math.Min(6, colorPalette.Length)];
+		float[] gradientPositions = new float[gradientColors.Length];
+		
+		for (int i = 0; i < gradientColors.Length; i++)
+		{
+			float t = i / (float)(gradientColors.Length - 1);
+			gradientColors[i] = GetPaletteColor(t);
+			gradientPositions[i] = t;
+		}
+		
+		using SKPaint paint = new SKPaint
+		{
+			Style = SKPaintStyle.Stroke,
+			StrokeWidth = 2,
+			Shader = SKShader.CreateRadialGradient(new SKPoint(centerX, centerY), maxRadius,
+				gradientColors, gradientPositions, SKShaderTileMode.Clamp)
+		};
 
 			for (int i = 0; i < binCount; i++)
 			{

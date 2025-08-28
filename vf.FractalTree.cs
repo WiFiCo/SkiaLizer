@@ -30,9 +30,16 @@ namespace SkiaLizer
             float branchAngle = 20f + intensity * 40f + (float)random.Next(-15, 15);
             branchAngle += (float)Math.Sin(treePhase * 0.1f + branchId) * intensity * 12f;
 
-            float hue = (colorHueBase + branchId * 12 + random.Next(0, 20) + intensity * 60f) % 360f;
-            byte sat = (byte)Math.Clamp(70 + (int)(intensity * 30) + (int)(beatPulse * 30), 0, 100);
-            byte val = (byte)Math.Clamp(75 + (int)(intensity * 25) + (int)(beatPulse * 40), 0, 100); // brighter on beats
+            // Use palette color based on branch position and intensity
+            float colorPos = (depthRatio + intensity + branchId * 0.1f) % 1.0f;
+            SKColor branchColor = GetPaletteColor(colorPos);
+            
+            // Adjust brightness based on intensity and beats
+            float brightnessMult = 0.7f + intensity * 0.3f + beatPulse * 0.4f;
+            branchColor = new SKColor(
+                (byte)(branchColor.Red * brightnessMult),
+                (byte)(branchColor.Green * brightnessMult), 
+                (byte)(branchColor.Blue * brightnessMult));
 
             float x2 = x + (float)(Math.Cos(angle * Math.PI / 180) * length);
             float y2 = y + (float)(Math.Sin(angle * Math.PI / 180) * length);
@@ -41,7 +48,7 @@ namespace SkiaLizer
             {
                 Style = SKPaintStyle.Stroke,
                 StrokeWidth = Math.Max(1f, depth * 1.2f * (0.7f + intensity * 0.4f + beatPulse * 0.6f)), // thicker on beats
-                Color = SKColor.FromHsv(hue, sat, val)
+                Color = branchColor
             };
 
             canvas.DrawLine(x, y, x2, y2, paint);

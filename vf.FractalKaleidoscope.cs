@@ -24,8 +24,8 @@ namespace SkiaLizer
             float hueBase = (colorHueBase + centroid * 360f) % 360f;
 
             // soft radial background so tiling never shows black seams
-            var bgTop = SKColor.FromHsv((hueBase + 20f) % 360f, 30, 20).WithAlpha(255);
-            var bgBot = SKColor.FromHsv((hueBase + 200f) % 360f, 30, 10).WithAlpha(255);
+            var bgTop = GetPaletteColor(((hueBase + 20f) / 360f) % 1.0f).WithAlpha(255);
+            var bgBot = GetPaletteColor(((hueBase + 200f) / 360f) % 1.0f).WithAlpha(255);
             using (var bg = new SKPaint { Shader = SKShader.CreateRadialGradient(new SKPoint(tex / 2f, tex / 2f), tex * 0.7f, new[] { bgTop, bgBot }, new float[] { 0f, 1f }, SKShaderTileMode.Clamp) })
             {
                 off.DrawRect(new SKRect(0, 0, tex, tex), bg);
@@ -56,8 +56,9 @@ namespace SkiaLizer
                 float n2 = 0.2f + level * 0.6f;
                 float n3 = 0.2f + highBandLevel * 0.6f;
                 var hue = (hueBase + i * 22f + beatPulse * 50f) % 360f;
-                using var p = new SKPaint { Style = SKPaintStyle.Stroke, StrokeWidth = 1.6f, Color = SKColor.FromHsv(hue, 70, 100).WithAlpha(180) };
-                using var glow = new SKPaint { Style = SKPaintStyle.Stroke, StrokeWidth = 4f, Color = SKColor.FromHsv(hue, 60, 80).WithAlpha(50), MaskFilter = SKMaskFilter.CreateBlur(SKBlurStyle.Normal, 6f) };
+                SKColor fractalColor = GetPaletteColor((hue / 360f) % 1.0f);
+                using var p = new SKPaint { Style = SKPaintStyle.Stroke, StrokeWidth = 1.6f, Color = fractalColor.WithAlpha(180) };
+                using var glow = new SKPaint { Style = SKPaintStyle.Stroke, StrokeWidth = 4f, Color = fractalColor.WithAlpha(50), MaskFilter = SKMaskFilter.CreateBlur(SKBlurStyle.Normal, 6f) };
                 using var path = SuperformulaPath(tex / 2f, tex / 2f, radius, m, n1, n2, n3, rot, 360);
                 off.DrawPath(path, glow);
                 off.DrawPath(path, p);
@@ -100,8 +101,9 @@ namespace SkiaLizer
             float x2 = x + (float)System.Math.Cos(angle) * length;
             float y2 = y + (float)System.Math.Sin(angle) * length;
             var hue = (hueBase + id * 11f + length * 0.2f) % 360f;
-            using var glow = new SKPaint { Style = SKPaintStyle.Stroke, StrokeWidth = depth * 1.6f, Color = SKColor.FromHsv(hue, 70, 80).WithAlpha(50), MaskFilter = SKMaskFilter.CreateBlur(SKBlurStyle.Normal, 4f) };
-            using var p = new SKPaint { Style = SKPaintStyle.Stroke, StrokeWidth = depth * 0.9f, Color = SKColor.FromHsv(hue, 80, 100).WithAlpha(180) };
+            SKColor branchColor = GetPaletteColor((hue / 360f) % 1.0f);
+            using var glow = new SKPaint { Style = SKPaintStyle.Stroke, StrokeWidth = depth * 1.6f, Color = branchColor.WithAlpha(50), MaskFilter = SKMaskFilter.CreateBlur(SKBlurStyle.Normal, 4f) };
+            using var p = new SKPaint { Style = SKPaintStyle.Stroke, StrokeWidth = depth * 0.9f, Color = branchColor.WithAlpha(180) };
             c.DrawLine(x, y, x2, y2, glow);
             c.DrawLine(x, y, x2, y2, p);
 

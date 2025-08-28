@@ -44,7 +44,11 @@ namespace SkiaLizer
                     float ang = (t + treePhase * 0.002f) * System.MathF.PI * 2f;
                     float x2 = cx + System.MathF.Cos(ang) * r;
                     float y2 = cy + System.MathF.Sin(ang) * r;
-                    spokePaint.Color = SKColor.FromHsv((hueBase + t * 360f) % 360f, 90, (byte)System.Math.Clamp(50 + (int)(mag * 200), 0, 100));
+                    float colorPos = ((hueBase + t * 360f) / 360f) % 1.0f;
+                    SKColor spokeColor = GetPaletteColor(colorPos);
+                    // Apply magnitude-based brightness
+                    float brightnessMult = (50 + mag * 200) / 100f;
+                    spokePaint.Color = new SKColor((byte)(spokeColor.Red * brightnessMult), (byte)(spokeColor.Green * brightnessMult), (byte)(spokeColor.Blue * brightnessMult));
                     src.DrawLine(cx, cy, x2, y2, spokePaint);
                 }
             }
@@ -73,7 +77,8 @@ namespace SkiaLizer
                     float ang = (t * 2f + treePhase * 0.004f) * System.MathF.PI * 2f;
                     float x = cx + System.MathF.Cos(ang) * r;
                     float y = cy + System.MathF.Sin(ang) * r;
-                    dotPaint.Color = SKColor.FromHsv((hueBase + 180f * mag) % 360f, 90, 100).WithAlpha(160);
+                    float dotColorPos = ((hueBase + 180f * mag) / 360f) % 1.0f;
+                    dotPaint.Color = GetPaletteColor(dotColorPos).WithAlpha(160);
                     src.DrawCircle(x, y, 2f + mag * 6f, dotPaint);
                 }
             }

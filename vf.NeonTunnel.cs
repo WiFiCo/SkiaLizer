@@ -26,10 +26,11 @@ namespace SkiaLizer
             float speed = 0.8f + level * 2.6f + beatPulse * 4.2f;
             tunnelPhase += speed * 2.0f;
 
-            // Color and paints
-            float hue = (colorHueBase + centroidNorm * 360f + tunnelPhase * 1.5f) % 360f;
-            using SKPaint glow = new SKPaint { Style = SKPaintStyle.Stroke, StrokeWidth = 3f, Color = SKColor.FromHsv(hue, 90, 100).WithAlpha(90), MaskFilter = SKMaskFilter.CreateBlur(SKBlurStyle.Normal, 6f) };
-            using SKPaint line = new SKPaint { Style = SKPaintStyle.Stroke, StrokeWidth = 1.4f, Color = SKColor.FromHsv(hue, 90, 100) };
+            // Color and paints from palette
+            float colorPosition = (centroidNorm + tunnelPhase * 0.01f) % 1.0f;
+            SKColor tunnelColor = GetPaletteColor(colorPosition);
+            using SKPaint glow = new SKPaint { Style = SKPaintStyle.Stroke, StrokeWidth = 3f, Color = tunnelColor.WithAlpha(90), MaskFilter = SKMaskFilter.CreateBlur(SKBlurStyle.Normal, 6f) };
+            using SKPaint line = new SKPaint { Style = SKPaintStyle.Stroke, StrokeWidth = 1.4f, Color = tunnelColor };
 
             // Vertex wormhole: polar grid deformed in Z with twist
             int radial = 22;   // around circle
