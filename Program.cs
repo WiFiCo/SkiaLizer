@@ -31,8 +31,9 @@ namespace SkiaLizer
             if (SettingsManager.AutoStartVisualizer)
             {
                 Console.WriteLine("Auto-start enabled. Starting visualizer and minimizing to tray...");
-                // Start the visualizer form in the background
-                StartVisualizerInBackground();
+                // Start the visualizer directly - this will run until closed
+                StartVisualizerAutoStart();
+                // After visualizer closes, continue to main loop
             }
 
             // Main application loop
@@ -96,7 +97,7 @@ namespace SkiaLizer
             Application.Run(currentVisualizerForm);
         }
 
-        static void StartVisualizerInBackground()
+        static void StartVisualizerAutoStart()
         {
             MenuSystem.EnsureDeviceSelected();
             var device = MenuSystem.SelectedDevice;
@@ -127,8 +128,8 @@ namespace SkiaLizer
                 TrayManager.HideFromTray();
             };
 
-            // Start the form without blocking the main loop
-            currentVisualizerForm.Show();
+            // Use Application.Run() for proper message loop - this is the key fix!
+            Application.Run(currentVisualizerForm);
         }
 
         static void HandleSettingsRequest()

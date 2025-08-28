@@ -482,3 +482,4 @@ C:\dev\SkiaLizer\obj\Release\net8.0-windows\win-x64\refint\SkiaLizer.dll
 C:\dev\SkiaLizer\obj\Release\net8.0-windows\win-x64\SkiaLizer.pdb
 C:\dev\SkiaLizer\obj\Release\net8.0-windows\win-x64\SkiaLizer.genruntimeconfig.cache
 C:\dev\SkiaLizer\obj\Release\net8.0-windows\win-x64\ref\SkiaLizer.dll
+C:\dev\SkiaLizer\obj\Release\net8.0-windows\win-x64\SkiaLizer.sourcelink.json
