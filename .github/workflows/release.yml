@@ -4,22 +4,15 @@ on:
   push:
     tags:
       - 'v*'  # Triggers on version tags like v1.0.0, v1.2.3, etc.
-  release:
-    types: [published]
 
 jobs:
   build:
-    name: Build for ${{ matrix.os }}
-    runs-on: ${{ matrix.os }}
+    name: Build for ${{ matrix.runtime }}
+    runs-on: windows-2022  # Use specific version instead of windows-latest
     strategy:
+      fail-fast: false
       matrix:
-        include:
-          - os: windows-latest
-            runtime: win-x64
-            output: SkiaLizer.exe
-          - os: windows-latest
-            runtime: win-x86
-            output: SkiaLizer.exe
+        runtime: [win-x64, win-x86]
 
     steps:
     - name: Checkout code
@@ -35,19 +28,39 @@ jobs:
 
     - name: Build and publish
       run: |
-        dotnet publish -c Release -r ${{ matrix.runtime }} --self-contained true -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -o ./publish/${{ matrix.runtime }}
+        dotnet publish -c Release -r ${{ matrix.runtime }} --self-contained true -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -o ./publish/${{ matrix.runtime }} --verbosity normal
+
+    - name: List published files
+      shell: pwsh
+      run: |
+        Write-Host "Contents of publish/${{ matrix.runtime }}:"
+        Get-ChildItem -Path "./publish/${{ matrix.runtime }}" -Recurse | Format-Table Name, Length, LastWriteTime
 
     - name: Create zip package
       shell: pwsh
       run: |
-        $archiveName = "SkiaLizer-${{ github.ref_name }}-${{ matrix.runtime }}"
-        Compress-Archive -Path "./publish/${{ matrix.runtime }}/*" -DestinationPath "./$archiveName.zip"
+        $tagName = "${{ github.ref_name }}"
+        $runtime = "${{ matrix.runtime }}"
+        $archiveName = "SkiaLizer-$tagName-$runtime"
+        
+        Write-Host "Creating archive: $archiveName.zip"
+        Write-Host "From path: ./publish/$runtime"
+        
+        if (Test-Path "./publish/$runtime") {
+          Compress-Archive -Path "./publish/$runtime/*" -DestinationPath "./$archiveName.zip" -Force
+          Write-Host "Archive created successfully"
+          Write-Host "Archive size: $((Get-Item "./$archiveName.zip").Length) bytes"
+        } else {
+          Write-Error "Publish directory not found: ./publish/$runtime"
+          exit 1
+        }
         
     - name: Upload artifact
       uses: actions/upload-artifact@v4
       with:
         name: SkiaLizer-${{ matrix.runtime }}
         path: ./SkiaLizer-${{ github.ref_name }}-${{ matrix.runtime }}.zip
+        retention-days: 5
 
   release:
     needs: build
@@ -58,8 +71,13 @@ jobs:
     - name: Download all artifacts
       uses: actions/download-artifact@v4
       
+    - name: List downloaded artifacts
+      run: |
+        echo "Downloaded artifacts:"
+        find . -name "*.zip" -type f
+        
     - name: Create Release
-      uses: softprops/action-gh-release@v1
+      uses: softprops/action-gh-release@v2
       with:
         files: |
           SkiaLizer-win-x64/SkiaLizer-${{ github.ref_name }}-win-x64.zip
@@ -71,8 +89,13 @@ jobs:
           - **Windows 64-bit**: `SkiaLizer-${{ github.ref_name }}-win-x64.zip`
           - **Windows 32-bit**: `SkiaLizer-${{ github.ref_name }}-win-x86.zip`
           
-          ### What's New
-          - Auto-generated release from tag ${{ github.ref_name }}
+          ### What's New in ${{ github.ref_name }}
+          - System tray integration with right-click menu
+          - Auto-hide console to tray when visualizer starts  
+          - Auto-start setting to launch directly to tray
+          - Improved settings navigation from tray
+          - Professional system tray icon and notifications
+          - Better user experience and application flow
           
           ### Installation
           1. Download the appropriate zip file for your system
@@ -85,9 +108,10 @@ jobs:
           
           ### Features
           - Low-resource audio visualizer
-          - Multiple visualization modes
+          - 16+ visualization modes
           - Custom color palettes
           - Transparency support
+          - System tray integration
           - Always-on-top mode
           - Hotkey controls
         draft: false
