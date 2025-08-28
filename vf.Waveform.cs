@@ -10,13 +10,23 @@ namespace SkiaLizer
 			var waveformArray = waveformQueue.ToArray();
 			if (waveformArray.Length == 0) return;
 
+			// Create gradient from current palette
+			SKColor[] gradientColors = new SKColor[Math.Min(4, colorPalette.Length)];
+			float[] gradientPositions = new float[gradientColors.Length];
+			
+			for (int i = 0; i < gradientColors.Length; i++)
+			{
+				float t = i / (float)(gradientColors.Length - 1);
+				gradientColors[i] = GetPaletteColor(t);
+				gradientPositions[i] = t;
+			}
+
 			using SKPaint paint = new SKPaint
 			{
 				Style = SKPaintStyle.Stroke,
 				StrokeWidth = 2,
 				Shader = SKShader.CreateLinearGradient(new SKPoint(0, 0), new SKPoint(width, 0),
-					new[] { SKColors.Green, SKColors.Lime },
-					new float[] { 0, 1 }, SKShaderTileMode.Clamp)
+					gradientColors, gradientPositions, SKShaderTileMode.Clamp)
 			};
 
 			using var path = new SKPath();
