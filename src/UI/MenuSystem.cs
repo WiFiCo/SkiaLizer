@@ -114,11 +114,6 @@ namespace SkiaLizer
             }
         }
 
-        public static void ForceShowSettings()
-        {
-            Console.Clear();
-            Console.WriteLine("=== Settings (opened from tray) ===");
-            SettingsManager.ShowSettings();
-        }
+
     }
 }

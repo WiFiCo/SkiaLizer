@@ -6,6 +6,7 @@ namespace SkiaLizer
     class Program
     {
         private static bool applicationRunning = true;
+        private static VisualizerForm? currentVisualizerForm = null;
 
         static void Main(string[] args)
         {
@@ -30,7 +31,8 @@ namespace SkiaLizer
             if (SettingsManager.AutoStartVisualizer)
             {
                 Console.WriteLine("Auto-start enabled. Starting visualizer and minimizing to tray...");
-                StartVisualizerToTray();
+                // Start the visualizer form in the background
+                StartVisualizerInBackground();
             }
 
             // Main application loop
@@ -75,7 +77,7 @@ namespace SkiaLizer
             TrayManager.ShowInTray();
             TrayManager.ShowBalloonTip("SkiaLizer", "Visualizer started. Right-click tray icon for options.", ToolTipIcon.Info);
 
-            var form = new VisualizerForm(
+            currentVisualizerForm = new VisualizerForm(
                 MenuSystem.SelectedVisual, 
                 device, 
                 SettingsManager.TransparencyMode, 
@@ -86,14 +88,15 @@ namespace SkiaLizer
                 PaletteManager.GetCurrentPalette());
 
             // When visualizer closes, restore console from tray
-            form.FormClosed += (s, e) => {
+            currentVisualizerForm.FormClosed += (s, e) => {
+                currentVisualizerForm = null;
                 TrayManager.HideFromTray();
             };
 
-            Application.Run(form);
+            Application.Run(currentVisualizerForm);
         }
 
-        static void StartVisualizerToTray()
+        static void StartVisualizerInBackground()
         {
             MenuSystem.EnsureDeviceSelected();
             var device = MenuSystem.SelectedDevice;
@@ -108,7 +111,7 @@ namespace SkiaLizer
             TrayManager.ShowInTray();
             TrayManager.ShowBalloonTip("SkiaLizer", "Auto-started to tray. Right-click for options.", ToolTipIcon.Info);
 
-            var form = new VisualizerForm(
+            currentVisualizerForm = new VisualizerForm(
                 MenuSystem.SelectedVisual, 
                 device, 
                 SettingsManager.TransparencyMode, 
@@ -119,22 +122,30 @@ namespace SkiaLizer
                 PaletteManager.GetCurrentPalette());
 
             // When visualizer closes, restore console from tray
-            form.FormClosed += (s, e) => {
+            currentVisualizerForm.FormClosed += (s, e) => {
+                currentVisualizerForm = null;
                 TrayManager.HideFromTray();
             };
 
-            // Start the form without blocking
-            form.Show();
+            // Start the form without blocking the main loop
+            currentVisualizerForm.Show();
         }
 
         static void HandleSettingsRequest()
         {
-            // Close any running visualizer and show settings
-            TrayManager.HideFromTray();
-            TrayManager.ShowBalloonTip("SkiaLizer", "Opening settings menu...", ToolTipIcon.Info);
+            // Close any running visualizer first
+            if (currentVisualizerForm != null && !currentVisualizerForm.IsDisposed)
+            {
+                currentVisualizerForm.Close();
+                currentVisualizerForm = null;
+            }
             
-            // Force the main loop to show settings
-            MenuSystem.ForceShowSettings();
+            // Restore console from tray
+            TrayManager.HideFromTray();
+            TrayManager.ShowBalloonTip("SkiaLizer", "Returning to main menu...", ToolTipIcon.Info);
+            
+            // The main menu will automatically show when the visualizer closes
+            // No need to force anything - just let the natural flow continue
         }
 
         static void HandleExitRequest()
