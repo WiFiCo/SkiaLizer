@@ -1050,7 +1050,12 @@ namespace SkiaLizer
             {
                 this.Load += (s, e) => {
                     this.WindowState = FormWindowState.Maximized;
-                    this.FormBorderStyle = FormBorderStyle.None;
+                    // Only set border to None if not already set by transparency
+                    // Transparency initialization already sets FormBorderStyle.None
+                    if (!enableTransparency)
+                    {
+                        this.FormBorderStyle = FormBorderStyle.None;
+                    }
                     isFullScreen = true;
                 };
             }
@@ -1485,12 +1490,18 @@ namespace SkiaLizer
             isFullScreen = !isFullScreen;
             if (isFullScreen)
             {
+                // Always set border to None for fullscreen
                 FormBorderStyle = FormBorderStyle.None;
                 WindowState = FormWindowState.Maximized;
             }
             else
             {
-                FormBorderStyle = FormBorderStyle.Sizable;
+                // Only set border to Sizable if not transparent
+                // Transparent windows must maintain FormBorderStyle.None
+                if (!isTransparent)
+                {
+                    FormBorderStyle = FormBorderStyle.Sizable;
+                }
                 WindowState = FormWindowState.Normal;
             }
             Invalidate();

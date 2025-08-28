@@ -55,3 +55,4 @@ C:\Users\WiFiPunk\OneDrive\files\Documents\GitHub\SkiaLizer\obj\Debug\net8.0-win
 C:\Users\WiFiPunk\OneDrive\files\Documents\GitHub\SkiaLizer\obj\Debug\net8.0-windows\SkiaLizer.pdb
 C:\Users\WiFiPunk\OneDrive\files\Documents\GitHub\SkiaLizer\obj\Debug\net8.0-windows\SkiaLizer.genruntimeconfig.cache
 C:\Users\WiFiPunk\OneDrive\files\Documents\GitHub\SkiaLizer\obj\Debug\net8.0-windows\ref\SkiaLizer.dll
+C:\dev\SkiaLizer\obj\Debug\net8.0-windows\SkiaLizer.sourcelink.json
