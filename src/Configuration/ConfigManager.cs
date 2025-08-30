@@ -21,6 +21,9 @@ namespace SkiaLizer
             public int SelectedVisual { get; set; } = 0;
             public int SelectedPalette { get; set; } = 0;
             public bool AutoStartVisualizer { get; set; } = false;
+            public bool ToggleRememberPosition { get; set; } = false;
+            public int WindowPositionX { get; set; } = -1; // -1 indicates not set
+            public int WindowPositionY { get; set; } = -1; // -1 indicates not set
             public List<string> CustomPaletteColors { get; set; } = new List<string>();
         }
 
@@ -173,6 +176,36 @@ namespace SkiaLizer
             set
             {
                 _config.CustomPaletteColors = value;
+                SaveConfig();
+            }
+        }
+
+        public static bool ToggleRememberPosition
+        {
+            get => _config.ToggleRememberPosition;
+            set
+            {
+                _config.ToggleRememberPosition = value;
+                SaveConfig();
+            }
+        }
+
+        public static int WindowPositionX
+        {
+            get => _config.WindowPositionX;
+            set
+            {
+                _config.WindowPositionX = value;
+                SaveConfig();
+            }
+        }
+
+        public static int WindowPositionY
+        {
+            get => _config.WindowPositionY;
+            set
+            {
+                _config.WindowPositionY = value;
                 SaveConfig();
             }
         }

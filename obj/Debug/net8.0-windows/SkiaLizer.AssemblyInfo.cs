@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("SkiaLizer")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+c1da5b9abee7615bbeeecaedf4c178e143ee809f")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+0ca2eef3357da6d6da12c1e920c2ea547f10efe4")]
 [assembly: System.Reflection.AssemblyProductAttribute("SkiaLizer")]
 [assembly: System.Reflection.AssemblyTitleAttribute("SkiaLizer")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

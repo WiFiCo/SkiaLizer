@@ -210,6 +210,19 @@ namespace SkiaLizer
             // Set always on top based on setting
             this.TopMost = alwaysOnTop;
 
+            // Restore window position if the feature is enabled and valid position is saved
+            if (SettingsManager.ToggleRememberPosition && 
+                SettingsManager.WindowPositionX >= 0 && 
+                SettingsManager.WindowPositionY >= 0)
+            {
+                // Check if the saved position is still valid (within screen bounds)
+                if (IsPositionOnScreen(SettingsManager.WindowPositionX, SettingsManager.WindowPositionY))
+                {
+                    this.StartPosition = FormStartPosition.Manual;
+                    this.Location = new Point(SettingsManager.WindowPositionX, SettingsManager.WindowPositionY);
+                }
+            }
+
             // Enable transparency for desktop and OBS
             if (enableTransparency)
             {
@@ -223,6 +236,7 @@ namespace SkiaLizer
 
             this.Paint += OnPaint;
             this.Resize += OnResize;
+            this.Move += OnMove;
 
             capture = new WasapiLoopbackCapture(device);
             capture.DataAvailable += OnDataAvailable;
@@ -230,6 +244,9 @@ namespace SkiaLizer
 
             this.KeyDown += OnKeyDown;
             this.FormClosing += (s, e) => { 
+                // Save window position if the feature is enabled
+                SaveWindowPosition();
+                
                 renderTimer?.Stop();
                 renderTimer?.Dispose();
                 capture.StopRecording(); 
@@ -299,6 +316,41 @@ namespace SkiaLizer
         private void OnResize(object? sender, EventArgs e)
         {
             Invalidate();
+        }
+
+        private void OnMove(object? sender, EventArgs e)
+        {
+            // Save window position when it moves (but only if not in fullscreen)
+            if (!isFullScreen && this.WindowState == FormWindowState.Normal)
+            {
+                SaveWindowPosition();
+            }
+        }
+
+        private void SaveWindowPosition()
+        {
+            // Only save position if the feature is enabled and window is in normal state
+            if (SettingsManager.ToggleRememberPosition && this.WindowState == FormWindowState.Normal && !isFullScreen)
+            {
+                SettingsManager.WindowPositionX = this.Location.X;
+                SettingsManager.WindowPositionY = this.Location.Y;
+            }
+        }
+
+        private bool IsPositionOnScreen(int x, int y)
+        {
+            // Check if the position is within any of the available screens
+            foreach (Screen screen in Screen.AllScreens)
+            {
+                // Allow some tolerance - the window just needs to be partially visible
+                Rectangle bounds = screen.WorkingArea;
+                if (x >= bounds.Left - 100 && x <= bounds.Right - 100 &&
+                    y >= bounds.Top - 50 && y <= bounds.Bottom - 50)
+                {
+                    return true;
+                }
+            }
+            return false;
         }
 
         private void OnPaint(object? sender, PaintEventArgs e)

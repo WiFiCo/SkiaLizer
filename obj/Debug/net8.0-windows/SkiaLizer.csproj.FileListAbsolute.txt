@@ -26,6 +26,7 @@ C:\dev\SkiaLizer\obj\Debug\net8.0-windows\refint\SkiaLizer.dll
 C:\dev\SkiaLizer\obj\Debug\net8.0-windows\SkiaLizer.pdb
 C:\dev\SkiaLizer\obj\Debug\net8.0-windows\SkiaLizer.genruntimeconfig.cache
 C:\dev\SkiaLizer\obj\Debug\net8.0-windows\ref\SkiaLizer.dll
+C:\dev\SkiaLizer\obj\Debug\net8.0-windows\SkiaLizer.sourcelink.json
 C:\Users\WiFiPunk\OneDrive\files\Documents\GitHub\SkiaLizer\bin\Debug\net8.0-windows\SkiaLizer.exe
 C:\Users\WiFiPunk\OneDrive\files\Documents\GitHub\SkiaLizer\bin\Debug\net8.0-windows\SkiaLizer.deps.json
 C:\Users\WiFiPunk\OneDrive\files\Documents\GitHub\SkiaLizer\bin\Debug\net8.0-windows\SkiaLizer.runtimeconfig.json
@@ -55,4 +56,3 @@ C:\Users\WiFiPunk\OneDrive\files\Documents\GitHub\SkiaLizer\obj\Debug\net8.0-win
 C:\Users\WiFiPunk\OneDrive\files\Documents\GitHub\SkiaLizer\obj\Debug\net8.0-windows\SkiaLizer.pdb
 C:\Users\WiFiPunk\OneDrive\files\Documents\GitHub\SkiaLizer\obj\Debug\net8.0-windows\SkiaLizer.genruntimeconfig.cache
 C:\Users\WiFiPunk\OneDrive\files\Documents\GitHub\SkiaLizer\obj\Debug\net8.0-windows\ref\SkiaLizer.dll
-C:\dev\SkiaLizer\obj\Debug\net8.0-windows\SkiaLizer.sourcelink.json

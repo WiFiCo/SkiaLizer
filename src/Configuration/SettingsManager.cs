@@ -40,6 +40,24 @@ namespace SkiaLizer
             set => ConfigManager.AutoStartVisualizer = value;
         }
 
+        public static bool ToggleRememberPosition
+        {
+            get => ConfigManager.ToggleRememberPosition;
+            set => ConfigManager.ToggleRememberPosition = value;
+        }
+
+        public static int WindowPositionX
+        {
+            get => ConfigManager.WindowPositionX;
+            set => ConfigManager.WindowPositionX = value;
+        }
+
+        public static int WindowPositionY
+        {
+            get => ConfigManager.WindowPositionY;
+            set => ConfigManager.WindowPositionY = value;
+        }
+
         public static void ShowSettings()
         {
             bool stayInSettings = true;
@@ -52,6 +70,7 @@ namespace SkiaLizer
                     $"Toggle Always on Top {(AlwaysOnTopMode ? "[ON]" : "[OFF]")}",
                     $"Toggle FullScreen {(FullScreenDefault ? "[ON]" : "[OFF]")}",
                     $"Auto-Start Visualizer {(AutoStartVisualizer ? "[ON]" : "[OFF]")}",
+                    $"Toggle Remember Position {(ToggleRememberPosition ? "[ON]" : "[OFF]")}",
                     "Set Window Size",
                     "Reset Settings",
                     "Back"
@@ -88,12 +107,19 @@ namespace SkiaLizer
                         Console.ReadKey();
                         break;
                     case 4:
-                        SelectWindowSize();
+                        ToggleRememberPosition = !ToggleRememberPosition;
+                        Console.WriteLine($"Toggle Remember Position is now {(ToggleRememberPosition ? "ON" : "OFF")})");
+                        Console.WriteLine("When enabled, the visualizer window will open at the same position where it was last closed.");
+                        Console.WriteLine("Press any key to continue...");
+                        Console.ReadKey();
                         break;
                     case 5:
-                        ResetSettings();
+                        SelectWindowSize();
                         break;
                     case 6:
+                        ResetSettings();
+                        break;
+                    case 7:
                         stayInSettings = false; // Back to main menu
                         break;
                 }
